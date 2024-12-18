@@ -1,0 +1,96 @@
+/* Importe uma fonte elegante, como a Lato ou Open Sans.
+   Para este exemplo, vamos usar fontes do sistema para simplicidade. */
+   body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    color: #333333; /* Cor de texto padrão */
+    background-color: #F5F5F5; /* Cor de fundo do corpo */
+  }
+  
+  /* Definição de cores */
+  .primary-color {
+    color: #C7B8EA; /* Lilás */
+  }
+  .primary-color-bg {
+    background-color: #C7B8EA; /* Lilás (para fundo) */
+  }
+  .secondary-color-light {
+    color: #F7F7F7; /* Neutro Claro (texto) */
+  }
+  .secondary-color-light-bg {
+    background-color: #F7F7F7; /* Neutro Claro (fundo) */
+  }
+  .secondary-color-dark {
+    color: #333333; /* Neutro Escuro (texto) */
+  }
+  .secondary-color-dark-bg {
+    background-color: #333333; /* Neutro Escuro (fundo) */
+  }
+  .accent-color {
+    color: #E9D8BE; /* Rosa Suave (texto) */
+  }
+  .accent-color-bg {
+    background-color: #E9D8BE; /* Rosa Suave (fundo) */
+  }
+  
+  /* Estilos Globais */
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+  a:hover {
+    color: #C7B8EA; /* Muda para lilás ao passar o mouse */
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    color: #333333; /* Títulos com a cor neutra escura */
+  }
+  h1 {
+    font-size: 2.5rem;
+  }
+  h2 {
+    font-size: 2rem;
+  }
+  
+  /* Container Padrão */
+  .container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background: #FFFFFF; /* Fundo branco para o conteúdo */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    border-radius: 8px; /* Cantos arredondados */
+  }
+  
+  /* Botão Padrão */
+  .button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .button-primary {
+    background-color: #C7B8EA; /* Lilás */
+    color: #FFFFFF;
+  }
+  .button-primary:hover {
+    background-color: #b284cd; /* Escurece um pouco ao passar o mouse */
+  }
+  
+  /* Media Query para responsividade básica */
+  @media (max-width: 600px) {
+   .container {
+      margin: 20px;
+      padding: 10px;
+    }
+    h1 {
+      font-size: 2rem;
+    }
+    h2 {
+      font-size: 1.75rem;
+    }
+  }
