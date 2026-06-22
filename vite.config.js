@@ -10,4 +10,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  // Must match the Laravel CORS `FRONTEND_URL` default (http://localhost:5174).
+  server: {
+    port: 5174,
+    strictPort: true,
+  },
 })

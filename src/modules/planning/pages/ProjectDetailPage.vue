@@ -50,6 +50,12 @@
                 <td>
                   <strong>{{ task.title }}</strong>
                   <span v-if="task.location" class="muted task-loc">{{ task.location }}</span>
+                  <span class="task-reminder" :class="{ 'task-reminder--off': !task.notify }">
+                    <template v-if="task.notify && taskNotifyAt(task)">
+                      🔔 Reminder scheduled for {{ formatReminder(taskNotifyAt(task)) }}
+                    </template>
+                    <template v-else>No reminder configured</template>
+                  </span>
                 </td>
                 <td>{{ formatDate(task.task_date) }}</td>
                 <td>{{ formatTimeRange(task) }}</td>
@@ -106,7 +112,12 @@ import TaskCalendar from '@/modules/planning/components/TaskCalendar.vue'
 import TaskFormModal from '@/modules/planning/components/TaskFormModal.vue'
 import StatusBadge from '@/modules/planning/components/StatusBadge.vue'
 import PriorityBadge from '@/modules/planning/components/PriorityBadge.vue'
-import { toTimeInput } from '@/modules/planning/types/planning.types'
+import {
+  toTimeInput,
+  formatDate,
+  formatReminder,
+  taskNotifyAt,
+} from '@/modules/planning/types/planning.types'
 
 const route = useRoute()
 const store = useStore()
@@ -142,12 +153,6 @@ onUnmounted(() => {
   // Reset the shared filter so other pages start clean.
   store.commit('tasks/SET_FILTERS', { projectId: '', status: '', priority: '' })
 })
-
-const formatDate = (value) => {
-  if (!value) return '—'
-  const [year, month, day] = value.split('T')[0].split('-')
-  return `${month}/${day}/${year}`
-}
 
 const formatTimeRange = (task) => {
   const start = toTimeInput(task.starts_at)
@@ -253,6 +258,17 @@ const handleDelete = async (task) => {
 .task-loc {
   display: block;
   font-size: 0.8rem;
+}
+
+.task-reminder {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--color-primary);
+}
+
+.task-reminder--off {
+  color: var(--color-text-muted);
 }
 
 .col-actions {

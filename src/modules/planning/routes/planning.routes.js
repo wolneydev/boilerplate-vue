@@ -2,6 +2,7 @@ const ProjectListPage = () => import('@/modules/planning/pages/ProjectListPage.v
 const ProjectFormPage = () => import('@/modules/planning/pages/ProjectFormPage.vue')
 const ProjectDetailPage = () => import('@/modules/planning/pages/ProjectDetailPage.vue')
 const CalendarPage = () => import('@/modules/planning/pages/CalendarPage.vue')
+const ReportPage = () => import('@/modules/planning/pages/ReportPage.vue')
 
 export default [
   {
@@ -32,6 +33,12 @@ export default [
     path: '/calendar',
     name: 'Calendar',
     component: CalendarPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/reports',
+    name: 'Reports',
+    component: ReportPage,
     meta: { requiresAuth: true },
   },
 ]

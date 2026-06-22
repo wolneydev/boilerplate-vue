@@ -63,6 +63,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useStore } from 'vuex'
+import { formatDate } from '@/modules/planning/types/planning.types'
 
 const store = useStore()
 
@@ -70,12 +71,6 @@ const projects = computed(() => store.getters['projects/allProjects'])
 const loading = computed(() => store.getters['projects/isLoading'])
 const error = computed(() => store.getters['projects/projectError'])
 const successMessage = ref('')
-
-const formatDate = (value) => {
-  if (!value) return '—'
-  const [year, month, day] = value.split('T')[0].split('-')
-  return `${month}/${day}/${year}`
-}
 
 onMounted(() => store.dispatch('projects/fetchProjects'))
 

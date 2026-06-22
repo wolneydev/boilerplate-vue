@@ -18,6 +18,7 @@
             <router-link to="/projects" class="nav__link">Projects</router-link>
             <router-link to="/calendar" class="nav__link">Schedule</router-link>
             <router-link to="/users" class="nav__link">Users</router-link>
+            <router-link to="/settings/telegram" class="nav__link">Notifications</router-link>
             <button class="btn btn-ghost btn-sm" @click="logout">Sign out</button>
           </template>
         </nav>

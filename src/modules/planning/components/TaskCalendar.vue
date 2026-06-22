@@ -12,6 +12,7 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import multiMonthPlugin from '@fullcalendar/multimonth'
 import listPlugin from '@fullcalendar/list'
+import { formatReminder } from '@/modules/planning/types/planning.types'
 
 const props = defineProps({
   events: { type: Array, default: () => [] },
@@ -56,6 +57,28 @@ const onDatesSet = (arg) => {
   })
 }
 
+// Flag tasks that have a reminder with a small bell marker and a tooltip
+// describing when the reminder is scheduled for.
+const onEventDidMount = (arg) => {
+  const { notify, notify_at: notifyAt } = arg.event.extendedProps || {}
+  if (!notify) return
+
+  const titleEl = arg.el.querySelector('.fc-event-title, .fc-list-event-title')
+  if (titleEl && !titleEl.querySelector('.fc-reminder-bell')) {
+    const bell = document.createElement('span')
+    bell.className = 'fc-reminder-bell'
+    bell.textContent = '🔔'
+    bell.setAttribute('aria-hidden', 'true')
+    titleEl.prepend(bell)
+  }
+
+  const reminder = formatReminder(notifyAt)
+  arg.el.setAttribute(
+    'title',
+    reminder ? `Reminder scheduled for ${reminder}` : 'Reminder scheduled',
+  )
+}
+
 const calendarOptions = reactive({
   plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, multiMonthPlugin, listPlugin],
   initialView: props.initialView,
@@ -83,6 +106,7 @@ const calendarOptions = reactive({
   select: onSelect,
   eventClick: onEventClick,
   datesSet: onDatesSet,
+  eventDidMount: onEventDidMount,
 })
 
 // Keep the calendar in sync when the parent refreshes the event list.
@@ -130,6 +154,12 @@ watch(
   border-radius: 6px;
   padding: 1px 3px;
   font-size: 0.78rem;
+}
+
+/* Reminder marker: a small bell prepended to the event title. */
+.calendar-wrap :deep(.fc-reminder-bell) {
+  margin-right: 0.2rem;
+  font-size: 0.72rem;
 }
 
 /* Priority marker: a subtle left accent on timed/list events. */

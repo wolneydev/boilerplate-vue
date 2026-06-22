@@ -29,11 +29,29 @@
         <span class="tile__arrow" aria-hidden="true">→</span>
       </router-link>
 
+      <router-link to="/reports" class="tile">
+        <span class="tile__icon" aria-hidden="true">◌</span>
+        <span class="tile__body">
+          <strong class="tile__title">Reports</strong>
+          <span class="muted">Analyze projects, tasks or both</span>
+        </span>
+        <span class="tile__arrow" aria-hidden="true">→</span>
+      </router-link>
+
       <router-link to="/users" class="tile">
         <span class="tile__icon" aria-hidden="true">◆</span>
         <span class="tile__body">
           <strong class="tile__title">Users</strong>
           <span class="muted">Create, edit and manage accounts</span>
+        </span>
+        <span class="tile__arrow" aria-hidden="true">→</span>
+      </router-link>
+
+      <router-link to="/settings/telegram" class="tile">
+        <span class="tile__icon" aria-hidden="true">🔔</span>
+        <span class="tile__body">
+          <strong class="tile__title">Notifications</strong>
+          <span class="muted">Configure Telegram reminders</span>
         </span>
         <span class="tile__arrow" aria-hidden="true">→</span>
       </router-link>

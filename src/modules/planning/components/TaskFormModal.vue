@@ -84,17 +84,34 @@
 
         <div class="notify">
           <label class="notify__check">
-            <input type="checkbox" v-model="form.notify" />
-            <span>Notify</span>
+            <input
+              type="checkbox"
+              role="switch"
+              v-model="form.notify"
+              aria-describedby="task-notify-help"
+            />
+            <span>Notify me about this task</span>
           </label>
+          <p id="task-notify-help" class="notify__hint muted">
+            Get a Telegram reminder for this task.
+            <router-link to="/settings/telegram">Configure Telegram</router-link>
+          </p>
+
           <div v-if="form.notify" class="field notify__field">
-            <label for="task-notify-min">Reminder</label>
-            <select id="task-notify-min" v-model.number="form.notify_minutes_before">
-              <option :value="null" disabled>Select</option>
-              <option v-for="opt in notifyOptions" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <label for="task-notify-at">Notification date and time</label>
+            <input
+              id="task-notify-at"
+              v-model="form.notify_at_datetime"
+              type="datetime-local"
+              :max="taskStartLocal || undefined"
+              aria-describedby="task-notify-at-help"
+            />
+            <p id="task-notify-at-help" class="field__help muted">
+              Choose exactly when you want to receive the reminder.
+            </p>
+            <p v-if="fieldErrors.notify_at_datetime" class="field__error">
+              {{ fieldErrors.notify_at_datetime }}
+            </p>
           </div>
         </div>
 
@@ -127,9 +144,10 @@ import { useStore } from 'vuex'
 import {
   TASK_STATUSES,
   TASK_PRIORITIES,
-  NOTIFY_OPTIONS,
   toDateInput,
   toTimeInput,
+  toDateTimeLocalInput,
+  combineDateTime,
 } from '@/modules/planning/types/planning.types'
 import { tasksService } from '@/modules/planning/services/tasks.service'
 
@@ -150,7 +168,6 @@ const store = useStore()
 
 const statuses = TASK_STATUSES
 const priorities = TASK_PRIORITIES
-const notifyOptions = NOTIFY_OPTIONS
 
 const saving = ref(false)
 const deleting = ref(false)
@@ -172,10 +189,17 @@ const emptyForm = () => ({
   priority: '',
   status: 'pending',
   notify: false,
-  notify_minutes_before: null,
+  notify_at_datetime: '',
 })
 
 const form = reactive(emptyForm())
+
+// The reminder must not be scheduled after the task starts. Used to cap the
+// datetime-local input and to validate on save.
+const taskStartLocal = computed(() => {
+  if (!form.task_date || !form.starts_at) return ''
+  return toDateTimeLocalInput(combineDateTime(form.task_date, form.starts_at))
+})
 
 const clearFeedback = () => {
   errorMessage.value = ''
@@ -198,7 +222,7 @@ const fillFromTask = (task) => {
     priority: task.priority ?? '',
     status: task.status ?? 'pending',
     notify: !!task.notify,
-    notify_minutes_before: task.notify_minutes_before ?? null,
+    notify_at_datetime: toDateTimeLocalInput(task.notify_at_datetime),
   })
 }
 
@@ -256,8 +280,32 @@ const applyServerValidation = (err) => {
   return false
 }
 
+// Local guard rails for the reminder before hitting the API. Returns false and
+// fills `fieldErrors` when the reminder configuration is invalid.
+const validateReminder = () => {
+  if (!form.notify) return true
+
+  if (!form.notify_at_datetime) {
+    fieldErrors.notify_at_datetime = 'Please choose when this reminder should be sent.'
+    return false
+  }
+
+  if (taskStartLocal.value && form.notify_at_datetime > taskStartLocal.value) {
+    fieldErrors.notify_at_datetime = 'The reminder date cannot be later than the task start date.'
+    return false
+  }
+
+  return true
+}
+
 const save = async () => {
   clearFeedback()
+
+  if (!validateReminder()) {
+    errorMessage.value = 'Please check the highlighted fields.'
+    return
+  }
+
   saving.value = true
   try {
     const payload = { ...form }
@@ -388,17 +436,21 @@ const remove = async () => {
 
 .notify {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
 }
 
 .notify__check {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  margin: 0 0 0.6rem;
+  margin: 0;
   font-size: 0.95rem;
+  font-weight: 500;
   color: var(--color-text);
 }
 
@@ -406,8 +458,18 @@ const remove = async () => {
   width: auto;
 }
 
+.notify__hint {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
 .notify__field {
-  flex: 1 1 200px;
+  margin-top: 0.5rem;
+}
+
+.field__help {
+  margin: 0.3rem 0 0;
+  font-size: 0.8rem;
 }
 
 .modal__actions {

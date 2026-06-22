@@ -5,9 +5,16 @@ import authRoutes from '@/modules/auth/routes/auth.routes'
 import dashboardRoutes from '@/modules/dashboard/routes/dashboard.routes'
 import usersRoutes from '@/modules/users/routes/users.routes'
 import planningRoutes from '@/modules/planning/routes/planning.routes'
+import settingsRoutes from '@/modules/settings/routes/settings.routes'
 
 // Routes are contributed by each feature module and merged here.
-const routes = [...authRoutes, ...dashboardRoutes, ...usersRoutes, ...planningRoutes]
+const routes = [
+  ...authRoutes,
+  ...dashboardRoutes,
+  ...usersRoutes,
+  ...planningRoutes,
+  ...settingsRoutes,
+]
 
 const router = createRouter({
   history: createWebHistory(),
