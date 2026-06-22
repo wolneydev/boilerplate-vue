@@ -91,7 +91,7 @@
     <section v-if="showTaskReport" class="section">
       <div class="section__head">
         <h2>Task report</h2>
-        <span class="muted">{{ tasks.length }} task(s)</span>
+        <span class="muted">{{ filteredTasks.length }} task(s)</span>
       </div>
 
       <div class="table-wrap">
@@ -118,7 +118,7 @@
               <td><PriorityBadge :priority="task.priority" /></td>
               <td><StatusBadge :status="task.status" /></td>
             </tr>
-            <tr v-if="tasks.length === 0">
+            <tr v-if="filteredTasks.length === 0">
               <td colspan="6" class="state muted">No tasks found for this report.</td>
             </tr>
           </tbody>
@@ -157,7 +157,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useStore } from 'vuex'
 import PriorityBadge from '@/modules/planning/components/PriorityBadge.vue'
 import StatusBadge from '@/modules/planning/components/StatusBadge.vue'
-import { tasksService } from '@/modules/planning/services/tasks.service'
+import { reportsService } from '@/modules/planning/services/reports.service'
 import { TASK_STATUSES, formatDate, toTimeInput } from '@/modules/planning/types/planning.types'
 
 const store = useStore()
@@ -175,6 +175,7 @@ const form = reactive({
 })
 
 const tasks = ref([])
+const reportProjects = ref([])
 const loading = ref(false)
 const error = ref('')
 
@@ -189,8 +190,13 @@ const showProjectReport = computed(() => form.type === 'projects' || form.type =
 const showTaskReport = computed(() => form.type === 'tasks')
 const showCombinedReport = computed(() => form.type === 'both')
 
+const filteredTasks = computed(() => {
+  if (!form.projectId) return tasks.value
+  return tasks.value.filter((task) => String(taskProjectId(task)) === String(form.projectId))
+})
+
 const sortedTasks = computed(() =>
-  [...tasks.value].sort((a, b) => {
+  [...filteredTasks.value].sort((a, b) => {
     const dateA = `${a.task_date ?? ''} ${a.starts_at ?? ''}`
     const dateB = `${b.task_date ?? ''} ${b.starts_at ?? ''}`
     return dateA.localeCompare(dateB)
@@ -198,17 +204,9 @@ const sortedTasks = computed(() =>
 )
 
 const projectReport = computed(() =>
-  selectedProjects.value.map((project) => {
-    const projectTasks = tasks.value.filter((task) => Number(task.project_id) === Number(project.id))
-    return {
-      ...project,
-      totalTasks: projectTasks.length,
-      statuses: TASK_STATUSES.map((status) => ({
-        ...status,
-        count: projectTasks.filter((task) => task.status === status.value).length,
-      })),
-    }
-  }),
+  reportProjects.value
+    .filter((project) => !form.projectId || String(projectId(project)) === String(form.projectId))
+    .map((project) => normalizeProjectReport(project)),
 )
 
 const combinedReport = computed(() =>
@@ -228,13 +226,14 @@ const loadReport = async () => {
   loading.value = true
   error.value = ''
   try {
-    const result = await tasksService.list({
-      start: form.start,
-      end: form.end,
-      projectId: form.projectId,
+    const result = await reportsService.show({
+      reportType: form.type,
       status: form.status,
+      startDate: form.start,
+      endDate: form.end,
     })
-    tasks.value = Array.isArray(result) ? result : result?.items ?? []
+    tasks.value = Array.isArray(result?.tasks) ? result.tasks : []
+    reportProjects.value = Array.isArray(result?.projects) ? result.projects : selectedProjects.value
   } catch (err) {
     error.value = err.message || 'Error generating the report.'
   } finally {
@@ -244,6 +243,49 @@ const loadReport = async () => {
 
 const projectName = (projectId) =>
   projects.value.find((project) => Number(project.id) === Number(projectId))?.name ?? '—'
+
+const projectId = (project) => project?.id ?? project?.project_id
+
+const taskProjectId = (task) => task?.project_id ?? task?.project?.id
+
+const statusCount = (project, status, projectTasks) => {
+  const statusRows = Array.isArray(project.statuses) ? project.statuses : []
+  const statusRow = statusRows.find((item) => (item.value ?? item.status) === status.value)
+  if (statusRow) return Number(statusRow.count ?? statusRow.total ?? statusRow.tasks_count ?? 0)
+
+  const statusCounts = project.status_counts ?? project.statusCounts ?? project.tasks_by_status
+  if (statusCounts && typeof statusCounts === 'object') {
+    return Number(statusCounts[status.value] ?? 0)
+  }
+
+  return projectTasks.filter((task) => task.status === status.value).length
+}
+
+const normalizeProjectReport = (project) => {
+  const id = projectId(project)
+  const baseProject = projects.value.find((item) => String(item.id) === String(id)) ?? {}
+  const projectTasks = filteredTasks.value.filter((task) => String(taskProjectId(task)) === String(id))
+
+  return {
+    ...baseProject,
+    ...project,
+    id,
+    name: project.name ?? baseProject.name ?? '—',
+    starts_on: project.starts_on ?? baseProject.starts_on,
+    expected_ends_on: project.expected_ends_on ?? baseProject.expected_ends_on,
+    totalTasks: Number(
+      project.totalTasks ??
+        project.total_tasks ??
+        project.tasks_count ??
+        project.count ??
+        projectTasks.length,
+    ),
+    statuses: TASK_STATUSES.map((status) => ({
+      ...status,
+      count: statusCount(project, status, projectTasks),
+    })),
+  }
+}
 
 const formatTimeRange = (task) => {
   const start = toTimeInput(task.starts_at)

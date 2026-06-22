@@ -3,6 +3,21 @@ import { toApiDateTime, combineDateTime } from '@/modules/planning/types/plannin
 
 const unwrap = (data) => data?.data ?? data
 
+const normalizeList = (data) => {
+  const payload = unwrap(data)
+  if (Array.isArray(payload)) {
+    return { items: payload, currentPage: 1, lastPage: 1 }
+  }
+
+  const items = payload?.items ?? payload?.data ?? []
+  return {
+    ...payload,
+    items: Array.isArray(items) ? items : [],
+    currentPage: Number(payload?.currentPage ?? payload?.current_page ?? 1),
+    lastPage: Number(payload?.lastPage ?? payload?.last_page ?? 1),
+  }
+}
+
 // Drop empty filter params so we never send `?status=&priority=` to the API.
 const cleanParams = (params = {}) =>
   Object.fromEntries(
@@ -45,7 +60,15 @@ const toPayload = (task) => {
 //   PUT    /api/tasks/{id}
 //   DELETE /api/tasks/{id}
 export const tasksService = {
-  async list({ start, end, projectId = '', status = '', priority = '' } = {}) {
+  async list({
+    start,
+    end,
+    projectId = '',
+    status = '',
+    priority = '',
+    page = '',
+    perPage = '',
+  } = {}) {
     const { data } = await httpClient.get('/tasks', {
       params: cleanParams({
         start,
@@ -53,9 +76,23 @@ export const tasksService = {
         project_id: projectId,
         status,
         priority,
+        page,
+        per_page: perPage,
       }),
     })
-    return unwrap(data)
+    return normalizeList(data)
+  },
+
+  async listAll(filters = {}) {
+    const firstPage = await this.list({ ...filters, page: 1 })
+    const tasks = [...firstPage.items]
+
+    for (let page = firstPage.currentPage + 1; page <= firstPage.lastPage; page += 1) {
+      const nextPage = await this.list({ ...filters, page })
+      tasks.push(...nextPage.items)
+    }
+
+    return tasks
   },
 
   async get(id) {
