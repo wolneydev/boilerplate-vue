@@ -362,6 +362,8 @@ const remove = async () => {
   max-width: 560px;
   margin: auto;
   padding: 1.75rem;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
 }
 
 .modal__head {
@@ -474,6 +476,7 @@ const remove = async () => {
 
 .modal__actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.6rem;
   margin-top: 0.5rem;
@@ -491,9 +494,31 @@ const remove = async () => {
 }
 
 @media (max-width: 540px) {
+  .modal {
+    padding: 0.75rem;
+  }
+
+  .modal__dialog {
+    max-height: calc(100vh - 1.5rem);
+    padding: 1.25rem;
+  }
+
+  .modal__head {
+    align-items: center;
+  }
+
   .grid-2,
   .grid-3 {
     grid-template-columns: 1fr;
+  }
+
+  .modal__actions .spacer {
+    display: none;
+  }
+
+  .modal__actions button {
+    flex: 1 1 100%;
+    width: 100%;
   }
 }
 </style>

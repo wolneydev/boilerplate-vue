@@ -126,6 +126,10 @@ const closeModal = () => {
   gap: 0.6rem;
 }
 
+.head-actions a {
+  display: inline-flex;
+}
+
 .legend {
   display: flex;
   flex-wrap: wrap;
@@ -170,6 +174,17 @@ const closeModal = () => {
   }
   .head-actions {
     flex-wrap: wrap;
+  }
+  .head-actions a,
+  .head-actions button {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .calendar-loading {
+    position: static;
+    margin-bottom: 0.75rem;
+    text-align: right;
   }
 }
 </style>

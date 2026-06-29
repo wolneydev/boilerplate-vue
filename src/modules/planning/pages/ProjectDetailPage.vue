@@ -228,6 +228,10 @@ const handleDelete = async (task) => {
   gap: 0.6rem;
 }
 
+.head-actions a {
+  display: inline-flex;
+}
+
 .notes {
   margin: 0 0 1.5rem;
   padding: 1.1rem 1.25rem;
@@ -253,6 +257,8 @@ const handleDelete = async (task) => {
 
 .table-wrap {
   overflow-x: auto;
+  border-radius: var(--radius-md);
+  -webkit-overflow-scrolling: touch;
 }
 
 .task-loc {
@@ -296,11 +302,19 @@ const handleDelete = async (task) => {
     flex-direction: column;
     align-items: stretch;
   }
-  .head-actions {
-    flex-wrap: wrap;
+  .head-actions a,
+  .head-actions button {
+    flex: 1 1 100%;
+    width: 100%;
   }
   .row-actions {
     justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .section__head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
   }
 }
 </style>

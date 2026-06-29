@@ -97,4 +97,19 @@ const reset = () => {
 .filters__reset {
   flex: none;
 }
+
+@media (max-width: 540px) {
+  .filters {
+    gap: 0.85rem;
+  }
+
+  .filters__field,
+  .filters__reset {
+    flex: 1 1 100%;
+  }
+
+  .filters__reset {
+    width: 100%;
+  }
+}
 </style>

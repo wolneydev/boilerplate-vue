@@ -108,4 +108,10 @@ const doLogin = async () => {
   text-align: center;
   font-size: 0.9rem;
 }
+
+@media (max-width: 540px) {
+  .auth-page {
+    padding: 2rem 1rem;
+  }
+}
 </style>

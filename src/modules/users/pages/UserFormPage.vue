@@ -108,6 +108,7 @@ const saveUser = async () => {
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.6rem;
   margin-top: 0.5rem;
 }
@@ -119,5 +120,13 @@ const saveUser = async () => {
 .state {
   padding: 1rem;
   text-align: center;
+}
+
+@media (max-width: 540px) {
+  .actions a,
+  .actions button {
+    flex: 1 1 100%;
+    width: 100%;
+  }
 }
 </style>

@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -22,6 +22,21 @@ const props = defineProps({
 const emit = defineEmits(['date-select', 'event-select', 'range-change'])
 
 const calendarRef = ref(null)
+const mobileQuery = '(max-width: 640px)'
+let mediaQueryList
+let handleMediaChange
+
+const desktopToolbar = {
+  left: 'prev,next today',
+  center: 'title',
+  right: 'multiMonthYear,dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+}
+
+const mobileToolbar = {
+  left: 'prev,next',
+  center: 'title',
+  right: 'today',
+}
 
 // Format a Date into local YYYY-MM-DD / HH:mm parts (avoids UTC shifting that
 // `toISOString` introduces).
@@ -83,11 +98,7 @@ const calendarOptions = reactive({
   plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, multiMonthPlugin, listPlugin],
   initialView: props.initialView,
   locale: 'en',
-  headerToolbar: {
-    left: 'prev,next today',
-    center: 'title',
-    right: 'multiMonthYear,dayGridMonth,timeGridWeek,timeGridDay,listWeek',
-  },
+  headerToolbar: desktopToolbar,
   buttonText: {
     today: 'Today',
     year: 'Year',
@@ -109,6 +120,19 @@ const calendarOptions = reactive({
   eventDidMount: onEventDidMount,
 })
 
+const applyResponsiveMode = async (matches) => {
+  calendarOptions.headerToolbar = matches ? mobileToolbar : desktopToolbar
+  await nextTick()
+
+  const calendarApi = calendarRef.value?.getApi()
+  if (!calendarApi) return
+
+  const targetView = matches ? 'listWeek' : props.initialView
+  if (calendarApi.view.type !== targetView) {
+    calendarApi.changeView(targetView)
+  }
+}
+
 // Keep the calendar in sync when the parent refreshes the event list.
 watch(
   () => props.events,
@@ -117,11 +141,24 @@ watch(
   },
   { deep: true },
 )
+
+onMounted(() => {
+  mediaQueryList = window.matchMedia(mobileQuery)
+  handleMediaChange = (event) => applyResponsiveMode(event.matches)
+  applyResponsiveMode(mediaQueryList.matches)
+  mediaQueryList.addEventListener('change', handleMediaChange)
+})
+
+onUnmounted(() => {
+  if (!mediaQueryList || !handleMediaChange) return
+  mediaQueryList.removeEventListener('change', handleMediaChange)
+})
 </script>
 
 <style scoped>
 .calendar-wrap {
   padding: 1.25rem;
+  overflow: hidden;
 }
 
 /* Tie FullCalendar's theme variables to the Northloom palette. */
@@ -141,6 +178,7 @@ watch(
 .calendar-wrap :deep(.fc .fc-toolbar-title) {
   font-family: var(--font-heading);
   font-size: 1.35rem;
+  text-align: center;
 }
 
 .calendar-wrap :deep(.fc .fc-button) {
@@ -177,9 +215,25 @@ watch(
   .calendar-wrap {
     padding: 0.75rem;
   }
+  .calendar-wrap :deep(.fc) {
+    width: 100%;
+  }
   .calendar-wrap :deep(.fc .fc-toolbar) {
     flex-direction: column;
     gap: 0.5rem;
+  }
+  .calendar-wrap :deep(.fc .fc-toolbar-chunk) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+  .calendar-wrap :deep(.fc .fc-toolbar-title) {
+    font-size: 1.15rem;
+  }
+  .calendar-wrap :deep(.fc .fc-list-event-title),
+  .calendar-wrap :deep(.fc .fc-list-event-time) {
+    white-space: normal;
   }
 }
 </style>

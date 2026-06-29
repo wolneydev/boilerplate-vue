@@ -164,6 +164,8 @@ const goToPage = (page) => {
 
 .table-wrap {
   overflow-x: auto;
+  border-radius: var(--radius-md);
+  -webkit-overflow-scrolling: touch;
 }
 
 .col-actions {
@@ -204,9 +206,26 @@ const goToPage = (page) => {
     flex-direction: column;
     align-items: stretch;
   }
+
+  .page-head a,
+  .page-head button {
+    width: 100%;
+  }
+
   .row-actions {
     justify-content: flex-start;
     flex-wrap: wrap;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .pagination__info {
+    flex: 1 0 100%;
+    order: -1;
+    text-align: center;
   }
 }
 </style>

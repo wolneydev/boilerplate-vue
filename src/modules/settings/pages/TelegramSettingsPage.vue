@@ -321,4 +321,14 @@ const testNotification = async () => {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 540px) {
+  .actions button {
+    width: 100%;
+  }
+
+  .switch {
+    align-items: flex-start;
+  }
+}
 </style>

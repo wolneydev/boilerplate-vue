@@ -115,8 +115,14 @@ const handleDelete = async (project) => {
   gap: 0.6rem;
 }
 
+.head-actions a {
+  display: inline-flex;
+}
+
 .table-wrap {
   overflow-x: auto;
+  border-radius: var(--radius-md);
+  -webkit-overflow-scrolling: touch;
 }
 
 .project-link {
@@ -165,6 +171,11 @@ const handleDelete = async (project) => {
   }
   .head-actions {
     flex-wrap: wrap;
+  }
+  .head-actions a,
+  .head-actions button {
+    flex: 1 1 100%;
+    width: 100%;
   }
   .row-actions {
     justify-content: flex-start;

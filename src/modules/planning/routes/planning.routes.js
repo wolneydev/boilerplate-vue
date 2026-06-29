@@ -3,6 +3,7 @@ const ProjectFormPage = () => import('@/modules/planning/pages/ProjectFormPage.v
 const ProjectDetailPage = () => import('@/modules/planning/pages/ProjectDetailPage.vue')
 const CalendarPage = () => import('@/modules/planning/pages/CalendarPage.vue')
 const ReportPage = () => import('@/modules/planning/pages/ReportPage.vue')
+const DependencyMapReportPage = () => import('@/modules/planning/pages/DependencyMapReportPage.vue')
 
 export default [
   {
@@ -39,6 +40,12 @@ export default [
     path: '/reports',
     name: 'Reports',
     component: ReportPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/reports/dependencies',
+    name: 'DependencyMapReport',
+    component: DependencyMapReportPage,
     meta: { requiresAuth: true },
   },
 ]

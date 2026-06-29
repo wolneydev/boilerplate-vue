@@ -161,6 +161,7 @@ const save = async () => {
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.6rem;
   margin-top: 0.5rem;
 }
@@ -177,6 +178,12 @@ const save = async () => {
 @media (max-width: 540px) {
   .grid-2 {
     grid-template-columns: 1fr;
+  }
+
+  .actions a,
+  .actions button {
+    flex: 1 1 100%;
+    width: 100%;
   }
 }
 </style>

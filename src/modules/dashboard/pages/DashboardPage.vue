@@ -136,6 +136,7 @@ const currentUser = computed(() => store.getters['auth/currentUser'])
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  min-width: 0;
 }
 
 .tile__title {
@@ -152,5 +153,16 @@ const currentUser = computed(() => store.getters['auth/currentUser'])
 .tile:hover .tile__arrow {
   color: var(--color-primary);
   transform: translateX(3px);
+}
+
+@media (max-width: 540px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tile {
+    align-items: flex-start;
+    padding: 1rem;
+  }
 }
 </style>

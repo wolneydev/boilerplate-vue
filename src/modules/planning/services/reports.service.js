@@ -6,10 +6,11 @@ const cleanParams = (params = {}) =>
   )
 
 export const reportsService = {
-  async show({ reportType = 'both', status = '', startDate = '', endDate = '' } = {}) {
+  async show({ reportType = 'both', projectId = '', status = '', startDate = '', endDate = '' } = {}) {
     const { data } = await httpClient.get('/reports', {
       params: cleanParams({
         report_type: reportType,
+        project_id: projectId,
         status,
         start_date: startDate,
         end_date: endDate,
