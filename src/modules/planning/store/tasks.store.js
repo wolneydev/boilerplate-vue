@@ -3,9 +3,12 @@ import { taskToCalendarEvent } from '@/modules/planning/types/planning.types'
 
 const state = () => ({
   tasks: [],
+  current: null,
   loading: false,
+  currentLoading: false,
   saving: false,
   error: null,
+  currentError: null,
   // The currently visible calendar window; refetched whenever it changes.
   range: { start: '', end: '' },
   filters: { projectId: '', status: '', priority: '' },
@@ -13,9 +16,16 @@ const state = () => ({
 
 const getters = {
   allTasks: (state) => state.tasks,
+  currentTask: (state) => state.current,
+  taskById: (state) => (id) =>
+    (String(state.current?.id) === String(id) ? state.current : null) ??
+    state.tasks.find((task) => String(task.id) === String(id)) ??
+    null,
   isLoading: (state) => state.loading,
+  isCurrentLoading: (state) => state.currentLoading,
   isSaving: (state) => state.saving,
   taskError: (state) => state.error,
+  currentTaskError: (state) => state.currentError,
   filters: (state) => state.filters,
   range: (state) => state.range,
   // Map API tasks into FullCalendar events, labelling them with project names
@@ -30,6 +40,9 @@ const mutations = {
   SET_TASKS(state, tasks) {
     state.tasks = tasks
   },
+  SET_CURRENT(state, task) {
+    state.current = task
+  },
   UPSERT_TASK(state, task) {
     const index = state.tasks.findIndex((t) => t.id === task.id)
     if (index === -1) state.tasks.push(task)
@@ -41,11 +54,17 @@ const mutations = {
   SET_LOADING(state, loading) {
     state.loading = loading
   },
+  SET_CURRENT_LOADING(state, loading) {
+    state.currentLoading = loading
+  },
   SET_SAVING(state, saving) {
     state.saving = saving
   },
   SET_ERROR(state, error) {
     state.error = error
+  },
+  SET_CURRENT_ERROR(state, error) {
+    state.currentError = error
   },
   SET_RANGE(state, range) {
     state.range = range
@@ -56,6 +75,22 @@ const mutations = {
 }
 
 const actions = {
+  async fetchTask({ commit }, id) {
+    commit('SET_CURRENT_LOADING', true)
+    commit('SET_CURRENT_ERROR', null)
+    try {
+      const task = await tasksService.get(id)
+      commit('SET_CURRENT', task)
+      commit('UPSERT_TASK', task)
+      return task
+    } catch (error) {
+      commit('SET_CURRENT_ERROR', error.message || 'Error loading the task.')
+      throw error
+    } finally {
+      commit('SET_CURRENT_LOADING', false)
+    }
+  },
+
   // Re-reads tasks for the active range + filters. Called after every mutation
   // so the calendar / lists stay in sync automatically.
   async fetchTasks({ commit, state }) {

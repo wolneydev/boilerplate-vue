@@ -3,6 +3,9 @@ import auth from '@/modules/auth/store/auth.store'
 import users from '@/modules/users/store/users.store'
 import projects from '@/modules/planning/store/projects.store'
 import tasks from '@/modules/planning/store/tasks.store'
+import funds from '@/modules/planning/store/funds.store'
+import allocations from '@/modules/planning/store/allocations.store'
+import costs from '@/modules/planning/store/costs.store'
 import telegram from '@/modules/settings/store/telegram.store'
 
 // Each feature module owns its own namespaced Vuex module. New modules are
@@ -13,6 +16,9 @@ const store = createStore({
     users,
     projects,
     tasks,
+    funds,
+    allocations,
+    costs,
     telegram,
   },
 })

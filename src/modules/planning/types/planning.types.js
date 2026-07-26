@@ -10,6 +10,7 @@
  * @property {string} starts_on            ISO date (YYYY-MM-DD)
  * @property {string} expected_ends_on     ISO date (YYYY-MM-DD)
  * @property {string|null} notes
+ * @property {string} currency             ISO 4217 code used by all project finances
  */
 
 /**

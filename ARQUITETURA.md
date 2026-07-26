@@ -40,6 +40,7 @@ A View nunca chama `axios` direto; o Service nunca conhece o componente.
 | **Vue Router 4** | Roteamento SPA | Rotas por módulo + guards |
 | **Vuex 4** | Gerência de estado | Módulos namespaced |
 | **Axios** | Cliente HTTP | Instância única + interceptors |
+| **Vitest + Vue Test Utils** | Testes automatizados | Domínio, contratos, stores e componentes |
 | **FullCalendar** | Calendário de tarefas | Visualização de agenda |
 | **Lodash** | Utilitários | Helpers pontuais |
 
@@ -275,6 +276,10 @@ const store = createStore({
     users,
     projects,
     tasks,
+    funds,
+    costs,
+    allocations,
+    telegram,
   },
 })
 ```
@@ -682,6 +687,41 @@ Qualquer service → httpClient → API responde 401 (rota protegida)
    → App.vue (isLoggedIn = false) atualiza o header; próxima navegação cai no guard → Login
 ```
 
+### 7.5. Fluxos financeiros de projeto e tarefa
+
+Fundos, custos e alocações pertencem ao módulo `planning`, mas possuem stores e
+services separados para que loading, erro e mutation pending não se bloqueiem:
+
+```
+ProjectFundsPage / ProjectCostsPage / TaskFinancePage
+   → funds | costs | allocations (Vuex namespaced)
+      → funds.service | costs.service | allocations.service
+         → httpClient → API Laravel autenticada
+```
+
+Contratos e regras principais:
+
+- `Project.currency` (ISO 4217) é a fonte única para formatação e precisão.
+- Valores monetários atravessam a API como strings decimais; validação e comparação
+  usam minor units em `BigInt`, nunca aritmética de ponto flutuante.
+- `incurred_on` é uma data civil `YYYY-MM-DD` sem conversão de fuso.
+- `recorded_at` é um timestamp ISO exibido no fuso local do usuário.
+- Custos são independentes e nunca alteram saldos de fundos.
+- Uma alocação aceita é seguida por refetch dos fundos e do histórico da tarefa.
+- Saldo insuficiente é identificado por `error.data.code === "INSUFFICIENT_FUNDS"`;
+  a API deve validar saldo e criar a alocação atomicamente.
+- Views não importam Axios/`httpClient`; toda escrita segue
+  `component → store action → service → shared client`.
+
+Rotas protegidas e lazy-loaded:
+
+- `/projects/:projectId/funds`
+- `/projects/:projectId/costs`
+- `/projects/:projectId/tasks/:taskId/finance`
+
+Os contratos de integração completos estão em
+`specs/001-project-finances/contracts/project-finances.openapi.yaml`.
+
 ---
 
 ## 8. Padrões e convenções (cheat sheet para a equipe)
@@ -707,7 +747,8 @@ Qualquer service → httpClient → API responde 401 (rota protegida)
   migração futura (Pinia é o padrão recomendado para Vue 3).
 - **Validação de formulários** hoje é manual (`fieldErrors` no `TaskFormModal`);
   poderia ser padronizada com uma lib (ex.: VeeValidate/Zod).
-- **Sem testes automatizados** no momento — candidato natural para próxima fase.
+- **Testes automatizados:** Vitest + Vue Test Utils cobrem configuração, helpers
+  financeiros, contratos de services, stores, componentes e limites arquiteturais.
 - **`env.apiBaseUrl`** tem um default apontando para um túnel ngrok; em produção
   deve sempre vir do `.env`.
 

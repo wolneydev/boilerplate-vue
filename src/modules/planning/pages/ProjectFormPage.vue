@@ -31,6 +31,21 @@
         </div>
 
         <div class="field">
+          <label for="currency">Currency *</label>
+          <input
+            id="currency"
+            v-model.trim="form.currency"
+            maxlength="3"
+            autocomplete="off"
+            placeholder="e.g. BRL"
+            required
+            @input="form.currency = form.currency.toUpperCase()"
+          />
+          <p class="muted field__hint">Three-letter ISO code used by all project finances.</p>
+          <p v-if="fieldErrors.currency" class="field__error">{{ fieldErrors.currency }}</p>
+        </div>
+
+        <div class="field">
           <label for="notes">Description / notes</label>
           <textarea
             id="notes"
@@ -72,6 +87,7 @@ const form = reactive({
   name: '',
   starts_on: '',
   expected_ends_on: '',
+  currency: 'BRL',
   notes: '',
 })
 
@@ -86,6 +102,7 @@ onMounted(async () => {
       name: project.name ?? '',
       starts_on: project.starts_on?.split('T')[0] ?? '',
       expected_ends_on: project.expected_ends_on?.split('T')[0] ?? '',
+      currency: project.currency?.trim().toUpperCase() ?? '',
       notes: project.notes ?? '',
     })
   } catch (err) {
@@ -98,6 +115,12 @@ onMounted(async () => {
 const save = async () => {
   errorMessage.value = ''
   clearFieldErrors()
+  form.currency = form.currency.trim().toUpperCase()
+  if (!/^[A-Z]{3}$/.test(form.currency)) {
+    fieldErrors.currency = 'Enter a valid three-letter currency code, such as BRL.'
+    errorMessage.value = 'Please check the highlighted fields.'
+    return
+  }
   try {
     if (isEditing.value) {
       await store.dispatch('projects/updateProject', { id: route.params.id, payload: { ...form } })
@@ -157,6 +180,11 @@ const save = async () => {
   margin: 0.3rem 0 0;
   font-size: 0.8rem;
   color: var(--color-danger-hover);
+}
+
+.field__hint {
+  margin: 0.3rem 0 0;
+  font-size: 0.8rem;
 }
 
 .actions {

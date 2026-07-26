@@ -26,6 +26,7 @@ export const projectsService = {
       name: payload.name,
       starts_on: payload.starts_on,
       expected_ends_on: payload.expected_ends_on,
+      currency: payload.currency,
       notes: payload.notes || null,
     })
     return unwrap(data)
@@ -36,6 +37,7 @@ export const projectsService = {
       name: payload.name,
       starts_on: payload.starts_on,
       expected_ends_on: payload.expected_ends_on,
+      currency: payload.currency,
       notes: payload.notes || null,
     })
     return unwrap(data)

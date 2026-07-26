@@ -19,6 +19,12 @@
           <router-link :to="`/projects/${project.id}/edit`">
             <button type="button" class="btn btn-secondary">Edit project</button>
           </router-link>
+          <router-link :to="`/projects/${project.id}/funds`" class="btn btn-secondary">
+            Add funds
+          </router-link>
+          <router-link :to="`/projects/${project.id}/costs`" class="btn btn-secondary">
+            Costs
+          </router-link>
           <button type="button" @click="openCreate">New task</button>
         </div>
       </header>
@@ -63,6 +69,12 @@
                 <td><StatusBadge :status="task.status" /></td>
                 <td>
                   <div class="row-actions">
+                    <router-link
+                      :to="`/projects/${project.id}/tasks/${task.id}/finance`"
+                      class="btn btn-sm"
+                    >
+                      Allocate funds
+                    </router-link>
                     <button class="btn btn-secondary btn-sm" @click="openEdit(task)">Edit</button>
                     <button class="btn btn-danger btn-sm" @click="handleDelete(task)">Delete</button>
                   </div>

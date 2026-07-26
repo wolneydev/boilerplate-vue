@@ -44,6 +44,12 @@
                 <router-link :to="`/projects/${project.id}`">
                   <button class="btn btn-ghost btn-sm">Details</button>
                 </router-link>
+                <router-link
+                  :to="`/projects/${project.id}/funds`"
+                  class="btn btn-secondary btn-sm"
+                >
+                  Add funds
+                </router-link>
                 <router-link :to="`/projects/${project.id}/edit`">
                   <button class="btn btn-secondary btn-sm">Edit</button>
                 </router-link>
