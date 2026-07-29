@@ -1,0 +1,416 @@
+openapi: 3.1.0
+info:
+  title: Northloom Project Finances API Dependency
+  version: 1.0.0
+  description: >
+    Frontend-facing contract required by the project financial management feature.
+    All successful payloads use the Laravel-style data envelope. Operations use the
+    application's existing bearer-token and secure session-cookie authentication;
+    this feature does not define or change their credentials or cookie name.
+servers:
+  - url: /api
+paths:
+  /projects/{projectId}:
+    get:
+      summary: Retrieve a project including its authoritative currency
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Project found
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Project'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /projects/{projectId}/funds:
+    get:
+      summary: List all funds for a project
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Project funds
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProjectFund'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      summary: Create a project fund
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FundWrite'
+      responses:
+        '201':
+          description: Fund created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ProjectFund'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /projects/{projectId}/funds/{fundId}:
+    put:
+      summary: Update a project fund
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/FundId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FundWrite'
+      responses:
+        '200':
+          description: Fund updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ProjectFund'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /projects/{projectId}/costs:
+    get:
+      summary: List project costs newest first
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Project cost history
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProjectCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      summary: Register a project cost without changing fund balances
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CostWrite'
+      responses:
+        '201':
+          description: Cost registered
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ProjectCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /tasks/{taskId}/financial-allocations:
+    post:
+      summary: Atomically allocate a project fund to a task
+      description: >
+        The backend must verify that the task and fund share a project and atomically
+        reject amounts above the authoritative available balance.
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllocationWrite'
+      responses:
+        '201':
+          description: Allocation recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TaskAllocation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Authoritative fund balance is insufficient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsufficientFundsError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+components:
+  parameters:
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    FundId:
+      name: fundId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    TaskId:
+      name: taskId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+
+  schemas:
+    DecimalAmount:
+      type: string
+      pattern: '^(0|[1-9][0-9]*)(\.[0-9]+)?$'
+      examples: ['1250.50']
+
+    Project:
+      type: object
+      required: [id, name, currency]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          examples: [BRL]
+      additionalProperties: true
+
+    ProjectFund:
+      type: object
+      required:
+        [id, project_id, name, total_balance, allocated_balance, available_balance]
+      properties:
+        id:
+          type: integer
+        project_id:
+          type: integer
+        name:
+          type: string
+        total_balance:
+          $ref: '#/components/schemas/DecimalAmount'
+        allocated_balance:
+          $ref: '#/components/schemas/DecimalAmount'
+        available_balance:
+          $ref: '#/components/schemas/DecimalAmount'
+        created_at:
+          type: [string, 'null']
+          format: date-time
+        updated_at:
+          type: [string, 'null']
+          format: date-time
+
+    FundWrite:
+      type: object
+      required: [name, total_balance]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        total_balance:
+          $ref: '#/components/schemas/DecimalAmount'
+      additionalProperties: false
+
+    ProjectCost:
+      type: object
+      required: [id, project_id, amount, description, incurred_on, recorded_at]
+      properties:
+        id:
+          type: integer
+        project_id:
+          type: integer
+        amount:
+          $ref: '#/components/schemas/DecimalAmount'
+        description:
+          type: string
+        incurred_on:
+          type: string
+          format: date
+        recorded_at:
+          type: string
+          format: date-time
+
+    CostWrite:
+      type: object
+      required: [amount, description, incurred_on]
+      properties:
+        amount:
+          $ref: '#/components/schemas/DecimalAmount'
+        description:
+          type: string
+          minLength: 1
+        incurred_on:
+          type: string
+          format: date
+      additionalProperties: false
+
+    TaskAllocation:
+      type: object
+      required: [id, task_id, fund_id, fund_name, amount, recorded_at]
+      properties:
+        id:
+          type: integer
+        task_id:
+          type: integer
+        fund_id:
+          type: integer
+        fund_name:
+          type: string
+        amount:
+          $ref: '#/components/schemas/DecimalAmount'
+        recorded_at:
+          type: string
+          format: date-time
+
+    AllocationWrite:
+      type: object
+      required: [task_id, fund_id, amount]
+      properties:
+        task_id:
+          type: integer
+          minimum: 1
+        fund_id:
+          type: integer
+          minimum: 1
+        amount:
+          $ref: '#/components/schemas/DecimalAmount'
+      additionalProperties: false
+
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+    ValidationError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          required: [errors]
+          properties:
+            errors:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
+
+    InsufficientFundsError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          required: [code]
+          properties:
+            code:
+              type: string
+              const: INSUFFICIENT_FUNDS
+            available_balance:
+              $ref: '#/components/schemas/DecimalAmount'
+
+  responses:
+    Unauthorized:
+      description: Session is absent or expired
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: User cannot access or mutate the resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Scoped resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ValidationError:
+      description: Request fields violate domain validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'

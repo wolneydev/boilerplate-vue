@@ -1,96 +1,329 @@
-/* Importe uma fonte elegante, como a Lato ou Open Sans.
-   Para este exemplo, vamos usar fontes do sistema para simplicidade. */
-   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-    margin: 0;
-    padding: 0;
-    line-height: 1.6;
-    color: #333333; /* Cor de texto padrão */
-    background-color: #F5F5F5; /* Cor de fundo do corpo */
+/* =========================================================================
+   Northloom — modern theme
+   White canvas + deep navy (primary), royal blue (secondary) and sky accent.
+   ========================================================================= */
+
+:root {
+  /* --- Surfaces --- */
+  --color-bg: #ffffff;
+  --color-surface: #f8fafc;
+  --color-surface-alt: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+
+  /* --- Text --- */
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
+  --color-text-inverse: #ffffff;
+
+  /* --- Primary: deep navy --- */
+  --color-primary: #1e3a5f;
+  --color-primary-hover: #152a45;
+  --color-primary-soft: #e8eef6;
+
+  /* --- Secondary: royal blue --- */
+  --color-secondary: #2563eb;
+  --color-secondary-hover: #1d4ed8;
+  --color-secondary-soft: #eff6ff;
+
+  /* --- Accent: bright blue (menu gradient) --- */
+  --color-accent: #3b82f6;
+  --color-accent-soft: #dbeafe;
+
+  /* --- Navigation header --- */
+  --color-nav-from: #0c2340;
+  --color-nav-to: #1e4976;
+
+  /* --- Feedback --- */
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-soft: #fef2f2;
+  --color-success: #059669;
+
+  /* --- Typography --- */
+  --font-heading: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* --- Shape & depth --- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --shadow-sm: 0 1px 2px rgba(15, 39, 68, 0.08);
+  --shadow-md: 0 10px 30px -12px rgba(15, 39, 68, 0.16);
+  --shadow-lg: 0 24px 60px -24px rgba(15, 39, 68, 0.22);
+
+  --transition: 0.2s ease;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text);
+  /* White base with a barely-there warm wash for depth. */
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(1200px 600px at 100% -10%, var(--color-primary-soft) 0%, transparent 55%),
+    radial-gradient(1000px 500px at -10% 110%, var(--color-secondary-soft) 0%, transparent 55%);
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+/* --- Typography --- */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0 0 0.5em;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+h1 {
+  font-size: clamp(1.85rem, 7vw, 2.6rem);
+}
+
+h2 {
+  font-size: clamp(1.35rem, 4vw, 1.6rem);
+}
+
+p {
+  margin: 0 0 1rem;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+/* --- Layout helpers --- */
+.container {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 4vw, 1.5rem);
+}
+
+.card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: clamp(1.25rem, 4vw, 2rem);
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+/* --- Forms --- */
+label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--color-text-muted);
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+input::placeholder {
+  color: #94a3b8;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+/* --- Buttons --- */
+button,
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.25rem;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--color-text-inverse);
+  background-color: var(--color-primary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  min-height: 2.5rem;
+  transition: background-color var(--transition), border-color var(--transition),
+    color var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+
+button:hover,
+.btn:hover {
+  background-color: var(--color-primary-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+button:active,
+.btn:active {
+  transform: translateY(1px);
+}
+
+button:disabled,
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Button variants */
+.btn-secondary {
+  background-color: var(--color-secondary);
+}
+.btn-secondary:hover {
+  background-color: var(--color-secondary-hover);
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-border-strong);
+}
+.btn-ghost:hover {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary-hover);
+  border-color: var(--color-primary);
+}
+
+.btn-danger {
+  background-color: var(--color-danger);
+}
+.btn-danger:hover {
+  background-color: var(--color-danger-hover);
+}
+
+.btn-sm {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.82rem;
+  min-height: 2rem;
+}
+
+/* --- Tables --- */
+table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+thead th {
+  padding: 0.85rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: left;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+tbody td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr {
+  transition: background-color var(--transition);
+}
+
+tbody tr:hover {
+  background: var(--color-primary-soft);
+}
+
+/* --- Alerts --- */
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.alert-error {
+  color: var(--color-danger-hover);
+  background: var(--color-danger-soft);
+  border: 1px solid #fecaca;
+}
+
+/* --- Responsive --- */
+@media (max-width: 600px) {
+  body {
+    background-attachment: scroll;
   }
-  
-  /* Definição de cores */
-  .primary-color {
-    color: #C7B8EA; /* Lilás */
+
+  input,
+  select,
+  textarea {
+    font-size: 1rem;
   }
-  .primary-color-bg {
-    background-color: #C7B8EA; /* Lilás (para fundo) */
+
+  thead th,
+  tbody td {
+    padding: 0.7rem 0.8rem;
   }
-  .secondary-color-light {
-    color: #F7F7F7; /* Neutro Claro (texto) */
-  }
-  .secondary-color-light-bg {
-    background-color: #F7F7F7; /* Neutro Claro (fundo) */
-  }
-  .secondary-color-dark {
-    color: #333333; /* Neutro Escuro (texto) */
-  }
-  .secondary-color-dark-bg {
-    background-color: #333333; /* Neutro Escuro (fundo) */
-  }
-  .accent-color {
-    color: #E9D8BE; /* Rosa Suave (texto) */
-  }
-  .accent-color-bg {
-    background-color: #E9D8BE; /* Rosa Suave (fundo) */
-  }
-  
-  /* Estilos Globais */
-  a {
-    text-decoration: none;
-    color: inherit;
-  }
-  a:hover {
-    color: #C7B8EA; /* Muda para lilás ao passar o mouse */
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    margin: 0;
-    color: #333333; /* Títulos com a cor neutra escura */
-  }
-  h1 {
-    font-size: 2.5rem;
-  }
-  h2 {
-    font-size: 2rem;
-  }
-  
-  /* Container Padrão */
-  .container {
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
-    background: #FFFFFF; /* Fundo branco para o conteúdo */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
-    border-radius: 8px; /* Cantos arredondados */
-  }
-  
-  /* Botão Padrão */
-  .button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  .button-primary {
-    background-color: #C7B8EA; /* Lilás */
-    color: #FFFFFF;
-  }
-  .button-primary:hover {
-    background-color: #b284cd; /* Escurece um pouco ao passar o mouse */
-  }
-  
-  /* Media Query para responsividade básica */
-  @media (max-width: 600px) {
-   .container {
-      margin: 20px;
-      padding: 10px;
-    }
-    h1 {
-      font-size: 2rem;
-    }
-    h2 {
-      font-size: 1.75rem;
-    }
-  }
+}
