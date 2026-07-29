@@ -98,14 +98,14 @@ const actions = {
     commit('SET_LOADING', true)
     commit('SET_ERROR', null)
     try {
-      const result = await tasksService.list({
+      // listAll walks every API page — list() alone drops tasks beyond page 1.
+      const items = await tasksService.listAll({
         start: state.range.start,
         end: state.range.end,
         projectId: state.filters.projectId,
         status: state.filters.status,
         priority: state.filters.priority,
       })
-      const items = Array.isArray(result) ? result : result?.items ?? []
       commit('SET_TASKS', items)
     } catch (err) {
       commit('SET_ERROR', err.message || 'Error loading tasks.')

@@ -3,19 +3,59 @@ import { toApiDateTime, combineDateTime } from '@/modules/planning/types/plannin
 
 const unwrap = (data) => data?.data ?? data
 
-const normalizeList = (data) => {
-  const payload = unwrap(data)
-  if (Array.isArray(payload)) {
-    return { items: payload, currentPage: 1, lastPage: 1 }
+/**
+ * Normalize list payloads from the Laravel API.
+ *
+ * Resource::collection(paginator) returns:
+ *   { data: [...], links: {...}, meta: { current_page, last_page, ... } }
+ *
+ * Do NOT unwrap `data` first — that discards `meta`/`current_page` and makes
+ * listAll() stop after page 1 (default per_page is 15).
+ */
+export const normalizeList = (data) => {
+  if (Array.isArray(data)) {
+    return { items: data, currentPage: 1, lastPage: 1 }
   }
 
-  const items = payload?.items ?? payload?.data ?? []
-  return {
-    ...payload,
-    items: Array.isArray(items) ? items : [],
-    currentPage: Number(payload?.currentPage ?? payload?.current_page ?? 1),
-    lastPage: Number(payload?.lastPage ?? payload?.last_page ?? 1),
+  if (!data || typeof data !== 'object') {
+    return { items: [], currentPage: 1, lastPage: 1 }
   }
+
+  // Prefer envelopes that still carry pagination metadata next to the items.
+  const candidates = [data, data.data].filter(
+    (value) => value && typeof value === 'object' && !Array.isArray(value),
+  )
+
+  for (const candidate of candidates) {
+    const items = Array.isArray(candidate.items)
+      ? candidate.items
+      : Array.isArray(candidate.data)
+        ? candidate.data
+        : null
+    if (!items) continue
+
+    const meta = candidate.meta && typeof candidate.meta === 'object' ? candidate.meta : {}
+    return {
+      items,
+      currentPage: Number(
+        candidate.currentPage ??
+          candidate.current_page ??
+          meta.currentPage ??
+          meta.current_page ??
+          1,
+      ),
+      lastPage: Number(
+        candidate.lastPage ?? candidate.last_page ?? meta.lastPage ?? meta.last_page ?? 1,
+      ),
+    }
+  }
+
+  // Plain `{ data: [...] }` with no pagination metadata.
+  if (Array.isArray(data.data)) {
+    return { items: data.data, currentPage: 1, lastPage: 1 }
+  }
+
+  return { items: [], currentPage: 1, lastPage: 1 }
 }
 
 // Drop empty filter params so we never send `?status=&priority=` to the API.

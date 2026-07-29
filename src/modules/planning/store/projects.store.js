@@ -55,8 +55,9 @@ const actions = {
     commit('SET_LOADING', true)
     commit('SET_ERROR', null)
     try {
-      const projects = await projectsService.list()
-      commit('SET_PROJECTS', Array.isArray(projects) ? projects : projects?.items ?? [])
+      // listAll walks every API page — list() alone drops projects beyond page 1.
+      const projects = await projectsService.listAll()
+      commit('SET_PROJECTS', projects)
     } catch (err) {
       commit('SET_ERROR', err.message || 'Error loading projects.')
     } finally {
