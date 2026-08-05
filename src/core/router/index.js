@@ -6,6 +6,7 @@ import dashboardRoutes from '@/modules/dashboard/routes/dashboard.routes'
 import usersRoutes from '@/modules/users/routes/users.routes'
 import planningRoutes from '@/modules/planning/routes/planning.routes'
 import settingsRoutes from '@/modules/settings/routes/settings.routes'
+import chatRoutes from '@/modules/chat/routes/chat.routes'
 
 // Routes are contributed by each feature module and merged here.
 const routes = [
@@ -14,6 +15,7 @@ const routes = [
   ...usersRoutes,
   ...planningRoutes,
   ...settingsRoutes,
+  ...chatRoutes,
 ]
 
 const router = createRouter({
