@@ -13,32 +13,32 @@ O usuário digita no chat do Vue. A API Laravel autentica a requisição, o agen
 
 ```mermaid
 flowchart TD
-    A[Usuário no Northloom<br/>/chat] --> B[ChatPage.vue]
-    B --> C[Vuex chat/sendMessage]
-    C --> D[chat.service.js<br/>POST /api/chat]
-    D --> E{API Laravel<br/>auth:api Passport}
-    E -->|401| Z1[Frontend: sessão inválida]
-    E -->|200 auth OK| F[ChatController@store]
-    F --> G[HospitableChatAgent<br/>laravel/ai]
-    G --> H[Carrega histórico<br/>agent_conversations]
-    G --> I[Lista tools MCP<br/>Client::local mcp:start hospitable]
-    G --> J[Ollama local<br/>qwen2.5:latest<br/>OLLAMA_URL]
-    J --> K{Modelo precisa<br/>chamar tool?}
-    K -->|Não| L[Resposta em texto]
-    K -->|Sim| M[tools/call JSON-RPC<br/>MCP stdio]
-    M --> N[HospitableServer<br/>Tool correspondente]
-    N --> O[AuthenticatesMcpUser<br/>USER_LOGIN / PASSWORD_USER]
-    O --> P[Domain Services<br/>Project / Task / Fund / Cost / Report...]
-    P --> Q[(PostgreSQL)]
+    A["Usuário no Northloom<br/>/chat"] --> B["ChatPage.vue"]
+    B --> C["Vuex chat/sendMessage"]
+    C --> D["chat.service.js<br/>POST /api/chat"]
+    D --> E{"API Laravel<br/>auth:api Passport"}
+    E -->|401| Z1["Frontend: sessão inválida"]
+    E -->|"200 auth OK"| F["ChatController@store"]
+    F --> G["HospitableChatAgent<br/>laravel/ai"]
+    G --> H["Carrega histórico<br/>agent_conversations"]
+    G --> I["Lista tools MCP<br/>Client::local mcp:start hospitable"]
+    G --> J["Ollama local<br/>qwen2.5:latest<br/>OLLAMA_URL"]
+    J --> K{"Modelo precisa<br/>chamar tool?"}
+    K -->|Não| L["Resposta em texto"]
+    K -->|Sim| M["tools/call JSON-RPC<br/>MCP stdio"]
+    M --> N["HospitableServer<br/>Tool correspondente"]
+    N --> O["AuthenticatesMcpUser<br/>USER_LOGIN / PASSWORD_USER"]
+    O --> P["Domain Services<br/>Project / Task / Fund / Cost / Report"]
+    P --> Q[("PostgreSQL")]
     Q --> P
     P --> N
     N --> M
     M --> J
     J --> L
-    L --> R[JSON response<br/>conversation_id + message + tool_calls]
+    L --> R["JSON response<br/>conversation_id + message + tool_calls"]
     R --> C
     C --> B
-    B --> S[Bolha Assistant<br/>+ tools usadas]
+    B --> S["Bolha Assistant<br/>+ tools usadas"]
 ```
 
 ## Sequência detalhada
@@ -53,18 +53,18 @@ sequenceDiagram
     participant MCP as MCP hospitable stdio
     participant Dom as Domain + DB
 
-    U->>V: Digita mensagem (ex: "hi" / criar projeto)
-    V->>API: POST /api/chat { message, conversation_id? }
+    U->>V: Digita mensagem
+    V->>API: POST /api/chat com message e conversation_id
     Note over API: Bearer token / cookie Passport
-    API->>Agent: forUser / continue + prompt(message)
+    API->>Agent: forUser / continue + prompt
     Agent->>MCP: connect + tools/list
-    MCP-->>Agent: store-project-tool, store-task-tool, ...
+    MCP-->>Agent: store-project-tool, store-task-tool
     Agent->>LLM: instructions + histórico + tools + mensagem
     LLM-->>Agent: texto e/ou tool_calls
 
     alt Modelo chama tool
-        Agent->>MCP: tools/call (nome + arguments)
-        MCP->>Dom: Tool handle() com usuário MCP
+        Agent->>MCP: tools/call nome + arguments
+        MCP->>Dom: Tool handle com usuário MCP
         Dom-->>MCP: resultado estruturado
         MCP-->>Agent: tool result
         Agent->>LLM: resultado da tool
@@ -72,7 +72,7 @@ sequenceDiagram
     end
 
     Agent-->>API: AgentResponse
-    API-->>V: { conversation_id, message, tool_calls }
+    API-->>V: conversation_id, message, tool_calls
     V-->>U: Exibe resposta no chat
 ```
 
