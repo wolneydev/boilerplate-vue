@@ -38,6 +38,15 @@
         <span class="tile__arrow" aria-hidden="true">→</span>
       </router-link>
 
+      <router-link to="/chat" class="tile">
+        <span class="tile__icon" aria-hidden="true">◈</span>
+        <span class="tile__body">
+          <strong class="tile__title">Assistant</strong>
+          <span class="muted">Ask MCP tools to create projects and tasks</span>
+        </span>
+        <span class="tile__arrow" aria-hidden="true">→</span>
+      </router-link>
+
       <router-link to="/users" class="tile">
         <span class="tile__icon" aria-hidden="true">◆</span>
         <span class="tile__body">

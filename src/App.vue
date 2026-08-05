@@ -33,6 +33,7 @@
             <router-link to="/projects" class="nav__link" @click="closeMenu">Projects</router-link>
             <router-link to="/calendar" class="nav__link" @click="closeMenu">Schedule</router-link>
             <router-link to="/reports" class="nav__link" @click="closeMenu">Reports</router-link>
+            <router-link to="/chat" class="nav__link" @click="closeMenu">Assistant</router-link>
             <router-link to="/settings/telegram" class="nav__link" @click="closeMenu">
               Notifications
             </router-link>
