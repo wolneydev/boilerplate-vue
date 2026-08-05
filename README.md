@@ -1,32 +1,27 @@
-# Vue 3 + Vite
+# Chatbot flow — Frontend → Ollama (Qwen 2.5) → Laravel MCP
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Flow documentation for the Northloom planning assistant through to the backend MCP tools.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
-# Fluxo do Chatbot — Frontend → Ollama (Qwen 2.5) → MCP Laravel
+## Overview
 
-Documento de fluxo do assistente de planejamento (Northloom) até as ferramentas MCP do backend .
-
-## Visão geral
-
-O usuário digita no chat do Vue. A API Laravel autentica a requisição, o agent (`HospitableChatAgent`) envia a mensagem ao **Ollama local (qwen2.5)**. O modelo decide se precisa chamar uma ferramenta MCP. Se sim, o Laravel inicia o servidor MCP local (`php artisan mcp:start hospitable`), executa a tool (criar projeto, tarefa, etc.) e devolve o resultado ao modelo, que gera a resposta final para o frontend.
+The user types in the Vue chat. The Laravel API authenticates the request, the agent (`HospitableChatAgent`) sends the message to **local Ollama (qwen2.5)**. The model decides whether it needs to call an MCP tool. If so, Laravel starts the local MCP server (`php artisan mcp:start hospitable`), runs the tool (create project, task, etc.), and returns the result to the model, which produces the final reply for the frontend.
 
 ```mermaid
 flowchart TD
-    A["Usuário no Northloom<br/>/chat"] --> B["ChatPage.vue"]
+    A["User in Northloom<br/>/chat"] --> B["ChatPage.vue"]
     B --> C["Vuex chat/sendMessage"]
     C --> D["chat.service.js<br/>POST /api/chat"]
-    D --> E{"API Laravel<br/>auth:api Passport"}
-    E -->|401| Z1["Frontend: sessão inválida"]
+    D --> E{"Laravel API<br/>auth:api Passport"}
+    E -->|401| Z1["Frontend: invalid session"]
     E -->|"200 auth OK"| F["ChatController@store"]
     F --> G["HospitableChatAgent<br/>laravel/ai"]
-    G --> H["Carrega histórico<br/>agent_conversations"]
-    G --> I["Lista tools MCP<br/>Client::local mcp:start hospitable"]
-    G --> J["Ollama local<br/>qwen2.5:latest<br/>OLLAMA_URL"]
-    J --> K{"Modelo precisa<br/>chamar tool?"}
-    K -->|Não| L["Resposta em texto"]
-    K -->|Sim| M["tools/call JSON-RPC<br/>MCP stdio"]
-    M --> N["HospitableServer<br/>Tool correspondente"]
+    G --> H["Load history<br/>agent_conversations"]
+    G --> I["List MCP tools<br/>Client::local mcp:start hospitable"]
+    G --> J["Local Ollama<br/>qwen2.5:latest<br/>OLLAMA_URL"]
+    J --> K{"Does the model need<br/>to call a tool?"}
+    K -->|No| L["Text reply"]
+    K -->|Yes| M["tools/call JSON-RPC<br/>MCP stdio"]
+    M --> N["HospitableServer<br/>Matching tool"]
     N --> O["AuthenticatesMcpUser<br/>USER_LOGIN / PASSWORD_USER"]
     O --> P["Domain Services<br/>Project / Task / Fund / Cost / Report"]
     P --> Q[("PostgreSQL")]
@@ -38,14 +33,14 @@ flowchart TD
     L --> R["JSON response<br/>conversation_id + message + tool_calls"]
     R --> C
     C --> B
-    B --> S["Bolha Assistant<br/>+ tools usadas"]
+    B --> S["Assistant bubble<br/>+ tools used"]
 ```
 
-## Sequência detalhada
+## Detailed sequence
 
 ```mermaid
 sequenceDiagram
-    actor U as Usuário
+    actor U as User
     participant V as Vue /chat
     participant API as Laravel POST /api/chat
     participant Agent as HospitableChatAgent
@@ -53,58 +48,58 @@ sequenceDiagram
     participant MCP as MCP hospitable stdio
     participant Dom as Domain + DB
 
-    U->>V: Digita mensagem
-    V->>API: POST /api/chat com message e conversation_id
-    Note over API: Bearer token / cookie Passport
+    U->>V: Types a message
+    V->>API: POST /api/chat with message and conversation_id
+    Note over API: Bearer token / Passport cookie
     API->>Agent: forUser / continue + prompt
     Agent->>MCP: connect + tools/list
     MCP-->>Agent: store-project-tool, store-task-tool
-    Agent->>LLM: instructions + histórico + tools + mensagem
-    LLM-->>Agent: texto e/ou tool_calls
+    Agent->>LLM: instructions + history + tools + message
+    LLM-->>Agent: text and/or tool_calls
 
-    alt Modelo chama tool
-        Agent->>MCP: tools/call nome + arguments
-        MCP->>Dom: Tool handle com usuário MCP
-        Dom-->>MCP: resultado estruturado
+    alt Model calls a tool
+        Agent->>MCP: tools/call name + arguments
+        MCP->>Dom: Tool handle with MCP user
+        Dom-->>MCP: structured result
         MCP-->>Agent: tool result
-        Agent->>LLM: resultado da tool
-        LLM-->>Agent: resposta final em texto
+        Agent->>LLM: tool result
+        LLM-->>Agent: final text reply
     end
 
     Agent-->>API: AgentResponse
     API-->>V: conversation_id, message, tool_calls
-    V-->>U: Exibe resposta no chat
+    V-->>U: Shows reply in chat
 ```
 
-## Camadas e arquivos
+## Layers and files
 
-| Etapa | Onde | Papel |
+| Step | Where | Role |
 |---|---|---|
-| UI | `src/modules/chat/pages/ChatPage.vue` | Chat, sugestões, bolhas |
-| Estado | `src/modules/chat/store/chat.store.js` | Mensagens, `conversationId`, sending |
-| HTTP | `src/modules/chat/services/chat.service.js` | `POST /chat` (timeout longo) |
-| Rota API | `routes/api.php` → `ChatController` | Auth + orquestra o agent |
-| Agent | `app/Ai/Agents/HospitableChatAgent.php` | Provider Ollama + tools MCP |
-| LLM config | `config/ai.php` + `.env` (`OLLAMA_URL`, `AI_MODEL`) | Só Ollama ativo |
-| MCP registro | `routes/ai.php` → `Mcp::local('hospitable', …)` | Servidor stdio |
-| Tools | `app/Mcp/Tools/*` | Projetos, tarefas, fundos, custos, etc. |
+| UI | `src/modules/chat/pages/ChatPage.vue` | Chat, suggestions, bubbles, history |
+| State | `src/modules/chat/store/chat.store.js` | Messages, `conversationId`, sending, conversations |
+| HTTP | `src/modules/chat/services/chat.service.js` | `POST /chat`, `GET /conversations` |
+| API route | `routes/api.php` → `ChatController` / `ConversationController` | Auth + orchestrates agent / history |
+| Agent | `app/Ai/Agents/HospitableChatAgent.php` | Ollama provider + MCP tools |
+| LLM config | `config/ai.php` + `.env` (`OLLAMA_URL`, `AI_MODEL`) | Ollama only |
+| MCP registry | `routes/ai.php` → `Mcp::local('hospitable', …)` | stdio server |
+| Tools | `app/Mcp/Tools/*` | Projects, tasks, funds, costs, etc. |
 
-## Pontos importantes
+## Key points
 
-1. **MCP ≠ chat.** O MCP só expõe tools. Quem interpreta linguagem natural é o **Ollama (qwen2.5)**.
-2. **Auth em duas camadas**
-   - Frontend → API: usuário logado (Passport).
-   - Tools MCP → domínio: conta de serviço `USER_LOGIN` / `PASSWORD_USER`.
-3. **Ollama no Windows / API no WSL-Docker**  
-   `OLLAMA_URL` deve apontar para o host Windows (ex.: `http://172.19.192.1:11434`), não `localhost` do container.
-4. **Conversas** ficam em `agent_conversations` / `agent_conversation_messages` (`laravel/ai`).
+1. **MCP ≠ chat.** MCP only exposes tools. Natural language is handled by **Ollama (qwen2.5)**.
+2. **Two-layer auth**
+   - Frontend → API: logged-in user (Passport).
+   - MCP tools → domain: service account `USER_LOGIN` / `PASSWORD_USER`.
+3. **Ollama on Windows / API in WSL-Docker**  
+   `OLLAMA_URL` must point at the Windows host (e.g. `http://172.19.192.1:11434`), not the container `localhost`.
+4. **Conversations** live in `agent_conversations` / `agent_conversation_messages` (`laravel/ai`). History is listed via `GET /conversations` and resumed via `conversation_id`.
 
-## Exemplo ponta a ponta
+## End-to-end example
 
-1. Usuário: *“Crie um projeto ERP com moeda BRL começando hoje.”*
+1. User: *“Create an ERP project with currency BRL starting today.”*
 2. Vue → `POST /api/chat`.
-3. Agent envia prompt + schemas das tools ao Qwen 2.5.
-4. Qwen escolhe `store-project-tool` com `name`, `currency`, `starts_on`, `expected_ends_on`.
-5. MCP executa a tool e grava o projeto.
-6. Qwen responde em texto confirmando o `id` criado.
-7. Vue mostra a resposta e, se houver, a tool usada na bolha.
+3. Agent sends the prompt + tool schemas to Qwen 2.5.
+4. Qwen picks `store-project-tool` with `name`, `currency`, `starts_on`, `expected_ends_on`.
+5. MCP runs the tool and persists the project.
+6. Qwen replies in text confirming the created `id`.
+7. Vue shows the reply and, if any, the tool used in the bubble.
